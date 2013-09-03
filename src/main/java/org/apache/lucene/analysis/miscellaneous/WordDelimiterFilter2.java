@@ -23,11 +23,11 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
-import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.RamUsageEstimator;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Splits words into subwords and performs optional transformations on subword groups.
@@ -145,7 +145,7 @@ public final class WordDelimiterFilter2 extends TokenFilter {
      * If not null is the set of tokens to protect from being delimited
      *
      */
-    final CharArraySet protWords;
+    final Set<String> protWords;
 
     private final int flags;
 
@@ -191,7 +191,7 @@ public final class WordDelimiterFilter2 extends TokenFilter {
      * @param configurationFlags Flags configuring the filter
      * @param protWords If not null is the set of tokens to protect from being delimited
      */
-    public WordDelimiterFilter2(TokenStream in, byte[] charTypeTable, int configurationFlags, CharArraySet protWords) {
+    public WordDelimiterFilter2(TokenStream in, byte[] charTypeTable, int configurationFlags, Set<String> protWords) {
         super(in);
         this.flags = configurationFlags;
         this.protWords = protWords;
@@ -207,7 +207,7 @@ public final class WordDelimiterFilter2 extends TokenFilter {
      * @param configurationFlags Flags configuring the filter
      * @param protWords If not null is the set of tokens to protect from being delimited
      */
-    public WordDelimiterFilter2(TokenStream in, int configurationFlags, CharArraySet protWords) {
+    public WordDelimiterFilter2(TokenStream in, int configurationFlags, Set<String> protWords) {
         this(in, WordDelimiterIterator.DEFAULT_WORD_DELIM_TABLE, configurationFlags, protWords);
     }
 
@@ -230,7 +230,7 @@ public final class WordDelimiterFilter2 extends TokenFilter {
 
                 // word of no delimiters, or protected word: just return it
                 if ((iterator.current == 0 && iterator.end == termLength) ||
-                        (protWords != null && protWords.contains(termBuffer, 0, termLength))) {
+                        (protWords != null && protWords.contains(new String(termBuffer, 0, termLength)))) {
                     posIncAttribute.setPositionIncrement(accumPosInc);
                     accumPosInc = 0;
                     return true;

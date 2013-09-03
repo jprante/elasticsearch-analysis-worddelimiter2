@@ -18,10 +18,8 @@
 package org.apache.lucene.analysis.miscellaneous;
 
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.util.CharArraySet;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
-import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
@@ -29,6 +27,7 @@ import org.elasticsearch.index.analysis.AbstractTokenFilterFactory;
 import org.elasticsearch.index.analysis.Analysis;
 import org.elasticsearch.index.settings.IndexSettings;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +59,7 @@ import static org.apache.lucene.analysis.miscellaneous.WordDelimiterFilter2.UPPE
  */
 public class WordDelimiterFilter2Factory extends AbstractTokenFilterFactory {
 
-    private CharArraySet protectedWords = null;
+    private Set<String> protectedWords = null;
     private int flags;
     byte[] typeTable = null;
 
@@ -102,8 +101,8 @@ public class WordDelimiterFilter2Factory extends AbstractTokenFilterFactory {
         // If 1, causes generated subwords to stick at the same position, they otherwise take a new position
         flags |= getFlag(ALL_PARTS_AT_SAME_POSITION, settings, "all_parts_at_same_position", false);
         // If not null is the set of tokens to protect from being delimited
-        Set<?> protoWords = Analysis.getWordSet(env, settings, "protected_words", version);
-        protectedWords = protoWords == null ? null : CharArraySet.copy(Lucene.VERSION, protoWords);
+        List<String> protoWords = Analysis.getWordList(env, settings, "protected_words");
+        protectedWords = protoWords == null ? null : new HashSet(protoWords);
     }
 
     public WordDelimiterFilter2 create(TokenStream input) {

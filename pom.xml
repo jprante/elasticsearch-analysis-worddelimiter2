@@ -8,9 +8,9 @@
     </description>
     <inceptionYear>2013</inceptionYear>
 
-    <groupId>org.xbib.elasticsearch.plugins</groupId>
+    <groupId>org.xbib.elasticsearch.plugin</groupId>
     <artifactId>elasticsearch-analysis-worddelimiter2</artifactId>
-    <version>1.2.0</version>
+    <version>0.90.3</version>
     <packaging>jar</packaging>
 
     <url>http://github.com/jprante/elasticsearch-analysis-worddelimiter2</url>
@@ -26,6 +26,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <elasticsearch.version>0.90.3</elasticsearch.version>
+        <lucene.version>4.4.0</lucene.version>
     </properties>
 
     <dependencies>
@@ -33,7 +34,7 @@
             <!-- this dependency must appear before elasticsearch -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-test-framework</artifactId>
-            <version>4.4.0</version>
+            <version>${lucene.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
