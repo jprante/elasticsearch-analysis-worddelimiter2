@@ -65,8 +65,6 @@ import java.io.IOException;
 
 public final class WordDelimiterFilter2 extends TokenFilter {
 
-    public static final String NAME = "word_delimiter_2";
-
     public static final int LOWER = 0x01;
     public static final int UPPER = 0x02;
     public static final int DIGIT = 0x04;

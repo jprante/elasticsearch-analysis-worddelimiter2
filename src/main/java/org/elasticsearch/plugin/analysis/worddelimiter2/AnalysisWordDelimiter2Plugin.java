@@ -19,14 +19,10 @@
 
 package org.elasticsearch.plugin.analysis.worddelimiter2;
 
-import org.elasticsearch.common.inject.Module;
+import org.apache.lucene.analysis.miscellaneous.WordDelimiterFilter2Factory;
 import org.elasticsearch.index.analysis.AnalysisModule;
-import org.elasticsearch.index.analysis.WordDelimiter2AnalysisBinderProcessor;
 import org.elasticsearch.plugins.AbstractPlugin;
 
-/**
- * @author ofavre
- */
 public class AnalysisWordDelimiter2Plugin extends AbstractPlugin {
 
     @Override public String name() {
@@ -34,13 +30,10 @@ public class AnalysisWordDelimiter2Plugin extends AbstractPlugin {
     }
 
     @Override public String description() {
-        return "Improved WordDelimiter token filter";
+        return "WordDelimiter2 token filter";
     }
 
-    @Override public void processModule(Module module) {
-        if (module instanceof AnalysisModule) {
-            AnalysisModule analysisModule = (AnalysisModule) module;
-            analysisModule.addProcessor(new WordDelimiter2AnalysisBinderProcessor());
-        }
+    public void onModule(AnalysisModule module) {
+        module.addTokenFilter("worddelimiter2", WordDelimiterFilter2Factory.class);
     }
 }

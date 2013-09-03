@@ -7,7 +7,7 @@ index:
                 filter: configured_word_delimiter_2
         filter:
             configured_word_delimiter_2:
-                type: word_delimiter_2
+                type: worddelimiter2
                 catenate_all: true
                 catenate_numbers: true
                 catenate_words: true

@@ -3,7 +3,7 @@ package org.elasticsearch.index.analysis;
 import org.testng.annotations.Test;
 
 @Test
-public class IntegrationTest extends BaseESTest {
+public class IntegrationTest extends BaseTest {
 
     public static final String ANALYZER = "configured_analyzer";
 

@@ -19,6 +19,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.search.SearchHit;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -26,9 +27,7 @@ import org.testng.annotations.BeforeMethod;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import static org.elasticsearch.client.Requests.clusterHealthRequest;
 import static org.elasticsearch.client.Requests.createIndexRequest;
@@ -37,20 +36,14 @@ import static org.elasticsearch.client.Requests.indexRequest;
 import static org.elasticsearch.client.Requests.refreshRequest;
 import static org.elasticsearch.client.Requests.searchRequest;
 import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BaseESTest {
-
-    protected boolean VERBOSE = false;
+public class BaseTest extends Assert {
 
     protected static final String INDEX = "some_index";
     protected static final String TYPE = "some_type";
 
-    private final ESLogger logger = Loggers.getLogger(getClass());
+    private final ESLogger logger = Loggers.getLogger(BaseTest.class);
 
     private Node node;
 
@@ -99,12 +92,12 @@ public class BaseESTest {
         String mapping = getMapping();
         if (mapping != null)
             createIndexRequest.mapping(TYPE, getMapping());
-        assertThat("Index creation", node.client().admin().indices().create(createIndexRequest).actionGet().isAcknowledged());
+        assertTrue(node.client().admin().indices().create(createIndexRequest).actionGet().isAcknowledged());
         logger.info("Running Cluster Health");
         ClusterHealthResponse clusterHealth = node.client().admin().cluster().health(clusterHealthRequest().waitForGreenStatus()).actionGet();
         logger.info("Done Cluster Health, status " + clusterHealth.getStatus());
-        assertThat(clusterHealth.isTimedOut(), equalTo(false));
-        assertThat(clusterHealth.getStatus(), equalTo(ClusterHealthStatus.GREEN));
+        assertFalse(clusterHealth.isTimedOut());
+        assertEquals(clusterHealth.getStatus(), ClusterHealthStatus.GREEN);
     }
 
     @AfterMethod
@@ -118,32 +111,23 @@ public class BaseESTest {
         assertAnalyzesTo(analyzer, input, output, startOffsets, endOffsets, types, posIncrements);
     }
     protected void assertAnalyzesTo(String analyzer, String input, String[] output, int startOffsets[], int endOffsets[], String types[], int posIncrements[]) {
-        assertThat(output, notNullValue());
+        assertNotNull(output);
         AnalyzeResponse response = node.client().admin().indices().analyze(new AnalyzeRequest(INDEX, input).analyzer(analyzer)).actionGet();
-        if (VERBOSE) {
-            try {
-                Map<String,String> params = new HashMap<String,String>();
-                params.put("format", "text");
-                logger.info("Tokens for \""+input+"\": " + response.toXContent(jsonBuilder().startObject(), new ToXContent.MapParams(params)).endObject().string());
-            } catch (IOException e) {
-                logger.error("Tokens for \""+input+"\": ERROR", e);
-            }
-        }
         Iterator<AnalyzeResponse.AnalyzeToken> tokens = response.iterator();
         int pos = 0;
         for (int i = 0; i < output.length; i++) {
-            assertThat("token "+i+" does not exist", tokens.hasNext());
+            assertNotNull(tokens.hasNext(), "token " + i + " does not exist");
             AnalyzeResponse.AnalyzeToken token = tokens.next();
-            assertThat("term "+i, token.getTerm(), equalTo(output[i]));
+            assertEquals(token.getTerm(), output[i], "term "+i);
             if (startOffsets != null)
-                assertThat("startOffset "+i, token.getStartOffset(), equalTo(startOffsets[i]));
+                assertEquals( token.getStartOffset(), startOffsets[i], "startOffset "+i);
             if (endOffsets != null)
-                assertThat("endOffset "+i, token.getEndOffset(), equalTo(endOffsets[i]));
+                assertEquals(token.getEndOffset(), endOffsets[i], "endOffset " + i);
             if (types != null)
-                assertThat("type "+i, token.getType(), equalTo(types[i]));
+                assertEquals(token.getType(), types[i], "type " + i);
             if (posIncrements != null) {
                 pos += posIncrements[i];
-                assertThat("position "+i, token.getPosition(), equalTo(pos));
+                assertEquals(token.getPosition(), pos, "position " + i);
             }
         }
     }
@@ -177,19 +161,14 @@ public class BaseESTest {
         queryBuilder.toXContent(searchQuery, ToXContent.EMPTY_PARAMS);
         searchQuery.endObject();
         searchQuery.endObject();
-        if (VERBOSE)
-            System.out.println(searchQuery.string());
 
         SearchResponse searchResponse = node.client().search(searchRequest(INDEX).source(searchQuery)).actionGet();
-        assertThat("successful search", searchResponse.getFailedShards(), equalTo(0));
+        assertEquals(searchResponse.getFailedShards(), 0, "successful search");
 
-        if (VERBOSE)
-            System.out.println(searchResponse.toString());
-
-        assertThat("Same number of results", searchResponse.getHits().getTotalHits(), equalTo((long)ids.length));
+        assertEquals(searchResponse.getHits().getTotalHits(), (long) ids.length, "Same number of results");
         int i = 0;
         for (SearchHit searchHit : searchResponse.getHits().getHits()) {
-            assertThat("Result #" + (i+1) + " is good", searchHit.id(), equalTo(ids[i]));
+            assertEquals(searchHit.id(), ids[i], "Result #" + (i+1) + " is good");
             ++i;
         }
     }
